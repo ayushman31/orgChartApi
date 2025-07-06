@@ -1,2 +1,14 @@
-build
-**/CMakeCache.txt
+node_modules
+test_generator/node_modules
+test_generator/pnpm-lock.yaml
+.git
+.gitignore
+*.md
+.env
+build/
+cmake-build-*/
+*.log
+.vscode
+.idea
+**/.pnpm
+**/node_modules

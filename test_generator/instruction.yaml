@@ -1,0 +1,47 @@
+task: generate_unit_tests
+language: C++
+framework: Drogon
+context: |
+  Generate tests for a Drogon REST API with 4 controllers:
+  - AuthController: register, login
+  - PersonsController: CRUD + reports (6 endpoints)
+  - DepartmentsController: CRUD + members (6 endpoints)
+  - JobsController: CRUD + persons (6 endpoints)
+
+mandatory_requirements:
+  - Use DROGON_TEST(TestName) macro, NOT Google Test
+  - Include #include <drogon/drogon_test.h>
+  - Use proper Drogon async patterns with callbacks
+  - Test HTTP request/response objects
+  - Generate tests for ALL controllers found in the code
+
+test_pattern: |
+  ```cpp
+  #include <drogon/drogon_test.h>
+  #include <drogon/drogon.h>
+  #include "controllers/AuthController.h"
+  
+  DROGON_TEST(AuthController_RegisterUser_Success) {
+      Json::Value userJson;
+      userJson["username"] = "testuser";
+      userJson["password"] = "testpass";
+      
+      auto req = drogon::HttpRequest::newHttpJsonRequest(userJson);
+      std::promise<drogon::HttpResponsePtr> promise;
+      auto future = promise.get_future();
+      
+      AuthController controller;
+      controller.registerUser(req, [&](const drogon::HttpResponsePtr& resp) {
+          promise.set_value(resp);
+      }, User(userJson));
+      
+      auto resp = future.get();
+      REQUIRE(resp->getStatusCode() == drogon::k201Created);
+  }
+  ```
+
+output_requirements:
+  - Generate tests for ALL public methods in ALL controllers
+  - Use exact class names and method signatures from the source code
+  - Include both success and error test cases
+  - Use proper JSON request/response handling

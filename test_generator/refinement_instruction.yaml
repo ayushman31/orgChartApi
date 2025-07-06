@@ -1,0 +1,121 @@
+task: refine_and_complete_unit_tests
+language: C++
+framework: Drogon
+
+current_issues_to_fix: |
+  CRITICAL COMPILATION ERRORS:
+  1. Missing include: #include <json/json.h>
+  2. Missing include: #include "models/User.h"
+  3. Missing include: #include "models/Person.h" 
+  4. Missing include: #include "models/Department.h"
+  5. Missing include: #include "models/Job.h"
+  6. Wrong method name: controller.login() should be controller.loginUser()
+
+  MISSING TESTS (17 out of 20 endpoints):
+  PersonsController (6 missing endpoints):
+  - get() -> GET /persons
+  - getOne() -> GET /persons/{id}  
+  - createOne() -> POST /persons
+  - updateOne() -> PUT /persons/{id}
+  - deleteOne() -> DELETE /persons/{id}
+  - getDirectReports() -> GET /persons/{id}/reports
+
+  DepartmentsController (6 missing endpoints):
+  - get() -> GET /departments
+  - getOne() -> GET /departments/{id}
+  - createOne() -> POST /departments  
+  - updateOne() -> PUT /departments/{id}
+  - deleteOne() -> DELETE /departments/{id}
+  - getDepartmentPersons() -> GET /departments/{id}/persons
+
+  JobsController (6 missing endpoints):
+  - get() -> GET /jobs
+  - getOne() -> GET /jobs/{id}
+  - createOne() -> POST /jobs
+  - updateOne() -> PUT /jobs/{id} 
+  - deleteOne() -> DELETE /jobs/{id}
+  - getJobPersons() -> GET /jobs/{id}/persons
+
+refinement_requirements: |
+  1. FIX all compilation errors by adding missing includes
+  2. FIX wrong method name: login() -> loginUser()
+  3. ADD all 17 missing endpoint tests listed above
+  4. REMOVE any duplicate tests (if found)
+  5. IMPROVE test assertions to include JSON response validation
+  6. ADD error test cases for each endpoint (invalid ID, missing fields, etc.)
+  7. ENSURE all tests use proper Drogon async patterns
+
+required_complete_headers: |
+  #include <drogon/drogon_test.h>
+  #include <drogon/drogon.h>
+  #include <json/json.h>
+  #include <memory>
+  #include <future>
+  #include <promise>
+  #include "controllers/AuthController.h"
+  #include "controllers/PersonsController.h"
+  #include "controllers/DepartmentsController.h"
+  #include "controllers/JobsController.h"
+  #include "models/User.h"
+  #include "models/Person.h"
+  #include "models/Department.h"
+  #include "models/Job.h"
+
+exact_method_names_to_use: |
+  AuthController:
+  - registerUser (NOT register)
+  - loginUser (NOT login)
+  
+  PersonsController:
+  - get, getOne, createOne, updateOne, deleteOne, getDirectReports
+  
+  DepartmentsController:  
+  - get, getOne, createOne, updateOne, deleteOne, getDepartmentPersons
+  
+  JobsController:
+  - get, getOne, createOne, updateOne, deleteOne, getJobPersons
+
+test_data_templates: |
+  User JSON: {"username": "testuser", "password": "testpass123"}
+  Person JSON: {"first_name": "John", "last_name": "Doe", "email": "john@example.com"}
+  Department JSON: {"name": "Engineering", "description": "Tech Department"}
+  Job JSON: {"title": "Software Engineer", "description": "Develops software"}
+
+expected_output: |
+  Generate a COMPLETE test file with:
+  - All missing includes added
+  - All method names corrected
+  - All 20 endpoints tested (2-3 test cases each)
+  - Total ~40-50 DROGON_TEST cases
+  - Both success and error scenarios for each endpoint
+  - Proper JSON request/response validation
+  - No duplicate tests
+  - Compilable C++ code
+
+output_format: |
+  Output ONLY the complete refined C++ test file with proper structure.
+  Start with all includes, then all test cases.
+  Use this exact format for each test:
+
+  DROGON_TEST(ControllerName_MethodName_Scenario) {
+      // Setup test data
+      Json::Value jsonData;
+      jsonData["field"] = "value";
+      
+      auto req = drogon::HttpRequest::newHttpJsonRequest(jsonData);
+      std::promise<drogon::HttpResponsePtr> promise;
+      auto future = promise.get_future();
+      
+      // Execute test
+      ControllerName controller;
+      controller.methodName(req, [&](const drogon::HttpResponsePtr& resp) {
+          promise.set_value(resp);
+      }, ModelClass(jsonData));
+      
+      // Verify results
+      auto resp = future.get();
+      REQUIRE(resp->getStatusCode() == drogon::k200OK);
+      
+      auto jsonResp = resp->getJsonObject();
+      REQUIRE(jsonResp != nullptr);
+  } 

@@ -1,0 +1,10 @@
+ Fix the C++ build failure. Analyze the build logs and source files to identify and fix all compilation errors.
+
+Common issues:
+- Missing #include statements
+- Wrong method signatures
+- CMake configuration problems
+- Missing dependencies
+- Namespace issues
+
+Provide corrected source files that will compile successfully.
